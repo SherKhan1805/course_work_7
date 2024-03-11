@@ -116,6 +116,61 @@ class HabitUpdateAPIView(generics.UpdateAPIView):
     # permission_classes = [AllowAny]
 
 
+class AddHabitToUserAPIView(generics.CreateAPIView):
+    """
+    Контроллер добавления публичной привычки
+    к пользователю
+    """
+    serializer_class = HabitSerializer
+    queryset = Habit.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        try:
+            # Получаем данные из запроса
+            habit_id = request.data.get('habit_id')
+            # Получаем пользователя из запроса
+            user = request.user
+            # Получаем публичную привычку по идентификатору
+            public_habit = Habit.objects.get(id=habit_id)
+
+            habit_values = public_habit.__dict__.copy()
+            # Удаляем _state атрибут
+            del habit_values['_state']
+            # Удаляем 'id' из значений атрибутов,
+            # чтобы не возникала конфликт с уже существующими объектами
+            del habit_values['id']
+
+            # Создаем новый объект Habit,
+            # передавая значения атрибутов public_habit
+            habit = Habit.objects.create(user=user, **habit_values)
+
+            # Установка даты и времени привычки
+            time = habit.time
+            periodicity = habit.periodicity
+            notification_time = datetime.utcnow()
+
+            next_no_time = calculate_next_notification_time(
+                time, periodicity, notification_time)
+
+            habit.notification_time = next_no_time
+
+            # Сохраняем привычку пользователю
+            habit.save()
+
+            # Сериализуем созданную привычку и возвращаем в ответе
+            serializer = self.get_serializer(habit)
+
+            return Response(serializer.data,
+                            status=status.HTTP_201_CREATED)
+        except Habit.DoesNotExist:
+            return Response({"error": "Публичная привычка не найдена."},
+                            status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 class GetChatId(APIView):
     permission_classes = [IsAuthenticated]
     # permission_classes = [AllowAny]

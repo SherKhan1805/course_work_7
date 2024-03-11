@@ -14,14 +14,35 @@ from freezegun import freeze_time
 class HabitTestCase(APITestCase):
 
     def setUp(self) -> None:
-        self.user = User.objects.create(name='Test', surname='Test',
-                                        email='test@t.com', is_superuser=True)
-        self.pleasant_habit = Habit.objects.create(user=self.user,
-                                                   location='проверка локации',
-                                                   time='00:00:00', periodicity=1,
-                                                   pleasant_habit=True,
-                                                   publicity=False,
-                                                   telegram_chat_id=704348791)
+        self.user = User.objects.create(
+            name='Test',
+            surname='Test',
+            email='test@t.com',
+            is_superuser=True)
+
+        self.user_2 = User.objects.create(
+            name='Test2',
+            surname='Test2',
+            email='test2@t.com',
+            is_superuser=False)
+
+        self.pleasant_habit = Habit.objects.create(
+            user=self.user,
+            location='проверка локации',
+            time='00:00:00',
+            activity='поесть',
+            pleasant_habit=True,
+            publicity=False,
+            telegram_chat_id=704348791)
+
+        self.public_habit = Habit.objects.create(
+            user=self.user,
+            location='проверка локации',
+            time='00:00:00',
+            activity='поесть',
+            pleasant_habit=True,
+            publicity=True,
+            telegram_chat_id=704348791)
 
     def test_create_useful_habit(self):
         """
@@ -173,6 +194,27 @@ class HabitTestCase(APITestCase):
         self.assertEqual(
             response.status_code,
             status.HTTP_200_OK
+        )
+
+    def test_add_public_habit(self):
+        """
+        Тестирование добавление публичной привычки
+        пользователю
+        """
+        self.client.force_authenticate(user=self.user_2)
+
+        data = {
+            'habit_id': self.public_habit.id,
+        }
+
+        response = self.client.post(
+            '/habit/add_habit/',
+            data=data
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_201_CREATED
         )
 
     def test_delete_habit(self):
