@@ -10,26 +10,18 @@ class User(AbstractUser):
     Создается при регистрации.
     """
     username = None
-    name = models.CharField(max_length=50,
-                            verbose_name='имя')
-    surname = models.CharField(max_length=50,
-                               verbose_name='фамилия')
-    age = models.IntegerField(verbose_name='возраст',
-                              **NULLABLE)
-    email = models.EmailField(unique=True,
-                              verbose_name='почта')
-    phone = models.CharField(max_length=35,
-                             verbose_name='телефон',
-                             **NULLABLE)
+    name = models.CharField(max_length=50, verbose_name='имя')
+    surname = models.CharField(max_length=50, verbose_name='фамилия')
+    age = models.IntegerField(verbose_name='возраст', **NULLABLE)
+    email = models.EmailField(unique=True, verbose_name='почта')
+    phone = models.CharField(max_length=35, verbose_name='телефон', **NULLABLE)
     avatar = models.ImageField(upload_to='media/',
                                verbose_name='аватар',
                                **NULLABLE)
-    city = models.CharField(max_length=50,
-                            verbose_name='город',
-                            **NULLABLE)
-    verification_code = models.CharField(max_length=50,
-                                         verbose_name='код верификации email',
-                                         **NULLABLE)
+    city = models.CharField(max_length=50, verbose_name='город', **NULLABLE)
+    telegram_chat_id = models.IntegerField(
+        verbose_name='Telegram',
+        **NULLABLE)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []

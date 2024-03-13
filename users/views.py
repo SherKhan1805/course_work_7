@@ -1,13 +1,18 @@
+import requests
+
 from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
+from rest_framework.response import Response
+from rest_framework import status
+
+from django.contrib.auth.hashers import make_password
+
+from config.settings import TELEGRAM_BOT_API_TOKEN
 from users.models import User
 from users.permissions import IsUser
 from users.serializers import UserSerializer, LimitedUserSerializer
-
-from rest_framework.permissions import IsAuthenticated
-
-from django.contrib.auth.hashers import make_password
 
 
 class UserCreateAPIView(generics.CreateAPIView):
@@ -65,15 +70,47 @@ class UserDestroyAPIView(generics.DestroyAPIView):
     permission_classes = [IsAuthenticated, IsUser]
 
 
-class UserGetID(APIView):
+class GetChatId(APIView):
     """
-    Получение id пользователя.
-    Для работы с привычками из бота.
+    Контроллер для упрощенного получения chat_id
+    и записи в привычки
     """
-    serializer_class = UserSerializer
+    # serializer_class = UserSerializer
     queryset = User.objects.all()
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        # Получаем ID текущего аутентифицированного пользователя
+        global telegram_user_id
+        bot_token = TELEGRAM_BOT_API_TOKEN
+        print(bot_token)
+        url = f'https://api.telegram.org/bot{bot_token}/getUpdates'
+
         user_id = request.user.id
+        print(user_id)
+
+        try:
+            response = requests.get(url)
+            response_data = response.json()
+            results_data = response_data['result']
+            print(results_data)
+
+            for result in results_data:
+                if result.get('message'):
+                    telegram_user_id = result['message']['chat']['id']
+
+                    print(telegram_user_id)
+                elif result.get('my_chat_member'):
+                    telegram_user_id = result['my_chat_member']['chat']['id']
+
+                    print(telegram_user_id)
+
+            user = User.objects.get(id=user_id)
+            user.telegram_chat_id = telegram_user_id
+            user.save()
+            print(user)
+
+            return Response(f'id получен {telegram_user_id} '
+                            f'и записан пользователю {user.id}',
+                            status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(str(e), status=status.HTTP_400_BAD_REQUEST)

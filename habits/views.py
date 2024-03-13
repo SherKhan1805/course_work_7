@@ -170,39 +170,3 @@ class AddHabitToUserAPIView(generics.CreateAPIView):
             return Response({"error": str(e)},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
-class GetChatId(APIView):
-    permission_classes = [IsAuthenticated]
-    # permission_classes = [AllowAny]
-
-    def get(self, request):
-        global telegram_user_id
-        bot_token = TELEGRAM_BOT_API_TOKEN
-        url = f'https://api.telegram.org/bot{bot_token}/getUpdates'
-
-        user_id = request.user.id
-
-        try:
-            response = requests.get(url)
-            response_data = response.json()
-            results_data = response_data['result']
-            for result in results_data:
-                telegram_user_first_name = result['message']['chat']['first_name']
-                telegram_user_id = result['message']['chat']['id']
-                error_last_name = result['message']['chat']
-                if error_last_name.get('last_name'):
-                    telegram_user_last_name = result['message']['chat']['last_name']
-                    print(f'{telegram_user_first_name} {telegram_user_last_name} - id: {telegram_user_id}')
-                    habits = Habit.objects.filter(user=user_id).all()
-                    for habit in habits:
-                        habit.telegram_chat_id = telegram_user_id
-                        print(habit.telegram_chat_id)
-                        habit.save()
-                else:
-                    print(f'{telegram_user_first_name} last_name "not found" - id: {telegram_user_id}')
-
-
-
-            return Response(status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
