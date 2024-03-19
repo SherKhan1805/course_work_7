@@ -1,0 +1,10 @@
+ **
+
+!api
+!config
+!habits
+!users
+!manage.py
+!poetry.lock
+!pyproject.toml
+!utils.py

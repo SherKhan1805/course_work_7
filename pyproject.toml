@@ -9,12 +9,10 @@ packages = [{include = "course_work_7"}]
 [tool.poetry.dependencies]
 python = "^3.11"
 django = "4.2.10"
-psycopg2 = "^2.9.9"
 pillow = "^10.2.0"
 djangorestframework = "^3.14.0"
 python-dotenv = "^1.0.1"
 djangorestframework-simplejwt = "^5.3.1"
-coverage = "^7.4.3"
 drf-yasg = "^1.21.7"
 django-cors-headers = "^4.3.1"
 stripe = "^8.5.0"
@@ -22,16 +20,14 @@ requests = "^2.31.0"
 celery = "^5.3.6"
 redis = "^5.0.2"
 django-celery-beat = "^2.5.0"
-eventlet = "^0.35.2"
 django-filter = "^23.5"
-aiogram = "2.14.3"
-async = "^0.6.2"
-executor = "^23.2"
-pytelegrambotapi = "^4.16.1"
 python-telegram-bot = "^21.0.1"
+psycopg2-binary = "^2.9.9"
+
+[tool.poetry.group.dev.dependencies]
+coverage = "^7.4.3"
 freezegun = "^1.4.0"
 flake8 = "^7.0.0"
-
 
 [build-system]
 requires = ["poetry-core"]
